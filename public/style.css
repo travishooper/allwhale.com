@@ -1,0 +1,112 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(#99ccff, #eee);
+}
+
+.wave {
+  position: absolute;
+  bottom: -50px;
+  width: 150%;
+  height: 200px;
+  margin-left: -25%;
+  background-color: #004466;
+  opacity: 0.9;
+  animation: waves 3s ease-in-out;
+  animation-iteration-count: infinite;
+  z-index: 3;
+}
+
+@keyframes waves {
+  0% {
+    transform: translate(5, 5);
+  }
+  30% {
+    transform: translate(-8px, 15px) rotate(1deg);
+  }
+  60% {
+    transform: translate(8px, 5px) rotate(-2deg);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.whale {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  width: 600px;
+  height: 300px;
+  margin-left: -300px;
+  z-index: 2;
+  animation: swim 3s linear;
+  animation-iteration-count: infinite;
+}
+.whale .body,
+.whale .tail {
+  float: left;
+}
+.whale .body {
+  width: 480px;
+  height: 300px;
+  background-color: #333;
+  border-bottom-left-radius: 150px 100px;
+  border-top-left-radius: 300px 300px;
+  border-bottom-right-radius: 100px 80px;
+  border-top-right-radius: 600px 500px;
+}
+.whale .body .eye {
+  position: absolute;
+  background-color: #fff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  top: 200px;
+  left: 60px;
+}
+.whale .body .eye::after {
+  content: '';
+  display: block;
+  background-color: #222;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin: 12px 0 0 2px;
+}
+.whale .tail {
+  margin: 170px 0 0 -10px;
+}
+.whale .tail::after,
+.whale .tail::before {
+  content: '';
+  display: block;
+  background-color: #333;
+  width: 120px;
+  height: 100px;
+  border-radius: 10% 80%;
+  border-top-left-radius: 0;
+}
+.whale .tail::before {
+  border-radius: 80% 10%;
+  border-bottom-left-radius: 0;
+  margin: 0 0 -30px 0;
+}
+
+@keyframes swim {
+  0% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(8px, -15px);
+  }
+  60% {
+    transform: translate(-8px, -5px);
+  }
+  100% {
+    transform: translate(5, 5);
+  }
+}
