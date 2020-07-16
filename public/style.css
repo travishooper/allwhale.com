@@ -10,9 +10,10 @@ body {
 
 .wave {
   position: absolute;
-  bottom: -50px;
   width: 150%;
-  height: 200px;
+  left: 50px;
+  height: 1250px;
+  bottom: -1100px;
   margin-left: -25%;
   background-color: #004466;
   opacity: 0.9;
