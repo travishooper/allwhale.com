@@ -43,13 +43,16 @@ body {
   height: 300px;
   margin-left: -300px;
   z-index: 2;
-  animation: swim 3s linear;
+  animation: swim 7s linear;
   animation-iteration-count: infinite;
 }
 .whale .body,
 .whale .tail {
   float: left;
 }
+
+
+
 .whale .body {
   width: 480px;
   height: 300px;
@@ -60,6 +63,7 @@ body {
   border-top-right-radius: 600px 500px;
 }
 .whale .body .eye {
+  animation: rotate-eye 8s ease-in-out infinite;
   position: absolute;
   background-color: #fff;
   border-radius: 50%;
@@ -77,7 +81,9 @@ body {
   border-radius: 50%;
   margin: 12px 0 0 2px;
 }
+
 .whale .tail {
+  animation: rotate-tail 2s ease-in-out infinite;
   margin: 170px 0 0 -10px;
 }
 .whale .tail::after,
@@ -101,12 +107,36 @@ body {
     transform: translate(0, 0);
   }
   30% {
-    transform: translate(8px, -15px);
+    transform: translate(100px, -15px);
   }
   60% {
-    transform: translate(-8px, -5px);
+    transform: translate(-100px, -5px);
+  }
+  85% {
+    transform: rotate(-360deg);
   }
   100% {
     transform: translate(5, 5);
+  }
+}
+
+@keyframes rotate-tail {
+  0% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+  100% {
+    transform: rotate(-20deg);
+  }
+}
+
+@keyframes rotate-eye {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(720deg);
   }
 }
