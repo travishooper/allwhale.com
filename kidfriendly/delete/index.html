@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KidFriendly — Delete Account</title>
+<meta name="description" content="Permanently delete your KidFriendly account and data.">
+<link rel="icon" href="/public/favicon.ico">
+<style>
+  :root{
+    --teal:#12A594; --teal-lt:#2ED3B7; --coral:#FF5A5F; --coral-dk:#e04a4f;
+    --ink:#12312c; --muted:#5b716c; --line:#e3ede9; --bg:#f6faf8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6}
+  .hero{background:linear-gradient(160deg,var(--teal-lt),var(--teal));color:#fff;padding:40px 20px 48px}
+  .brand{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .brand svg{width:48px;height:48px;flex:0 0 auto;filter:drop-shadow(0 3px 6px rgba(0,0,0,.2))}
+  .brand h1{margin:0;font-size:24px}
+  .brand p{margin:2px 0 0;opacity:.9;font-size:14px}
+  main{max-width:560px;margin:-24px auto 64px;background:#fff;border:1px solid var(--line);
+    border-radius:16px;padding:28px 26px;box-shadow:0 10px 30px rgba(18,165,148,.08)}
+  p{color:#23423c}
+  .warn{background:#fff4f4;border:1px solid #ffd9da;border-radius:12px;padding:14px 16px;margin:0 0 22px}
+  .warn strong{color:var(--coral-dk)}
+  label{display:block;font-weight:600;font-size:14px;margin:16px 0 6px}
+  input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;
+    background:#fbfefd}
+  input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(18,165,148,.15)}
+  .check{display:flex;gap:10px;align-items:flex-start;margin:20px 0 8px;font-size:14px;color:var(--muted)}
+  .check input{width:auto;margin-top:3px}
+  button{width:100%;margin-top:20px;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:700;
+    color:#fff;background:var(--coral);cursor:pointer;transition:background .15s,opacity .15s}
+  button:hover:not(:disabled){background:var(--coral-dk)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .msg{margin-top:18px;padding:14px 16px;border-radius:12px;font-size:15px;display:none}
+  .msg.show{display:block}
+  .msg.ok{background:#effaf3;border:1px solid #bfe9cf;color:#1c7a45}
+  .msg.err{background:#fff4f4;border:1px solid #ffd9da;color:var(--coral-dk)}
+  a{color:var(--teal);font-weight:600}
+  .foot{max-width:560px;margin:0 auto 48px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="brand">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path transform="translate(34,34) scale(18.5)" fill="#fff"
+          d="M12 2 C8.13 2 5 5.13 5 9 C5 14.25 12 22 12 22 C12 22 19 14.25 19 9 C19 5.13 15.87 2 12 2 Z"/>
+        <path transform="translate(176,116) scale(6.55)" fill="#FF5A5F"
+          d="M12 21 C12 21 3.8 13.4 3.8 8.3 C3.8 5.2 6.2 2.8 9.3 2.8 C11 2.8 12 4.4 12 4.4 C12 4.4 13 2.8 14.7 2.8 C17.8 2.8 20.2 5.2 20.2 8.3 C20.2 13.4 12 21 12 21 Z"/>
+      </svg>
+      <div>
+        <h1>Delete your account</h1>
+        <p>KidFriendly</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="warn">
+      <strong>This is permanent.</strong> Deleting your account removes your login,
+      favorites, votes, and “not kid friendly” flags. This cannot be undone.
+    </div>
+
+    <p>To confirm it’s you, enter the email and password for your KidFriendly account.</p>
+
+    <form id="form" novalidate>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+
+      <label class="check">
+        <input id="confirm" type="checkbox">
+        <span>I understand this permanently deletes my account and all associated
+        data, and cannot be undone.</span>
+      </label>
+
+      <button id="submit" type="submit" disabled>Permanently delete my account</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+  </main>
+
+  <div class="foot">
+    Changed your mind? <a href="/kidfriendly/pp">Read our privacy policy</a>.
+  </div>
+
+  <script>
+    // KidFriendly API base URL. Update if the server host changes.
+    var API_BASE = "https://78.47.203.211.sslip.io";
+
+    var form    = document.getElementById("form");
+    var email   = document.getElementById("email");
+    var pass    = document.getElementById("password");
+    var confirm = document.getElementById("confirm");
+    var submit  = document.getElementById("submit");
+    var msg     = document.getElementById("msg");
+
+    confirm.addEventListener("change", function () {
+      submit.disabled = !confirm.checked;
+    });
+
+    function showMsg(kind, text) {
+      msg.className = "msg show " + kind;
+      msg.textContent = text;
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!confirm.checked) return;
+      if (!email.value.trim() || !pass.value) {
+        showMsg("err", "Please enter your email and password.");
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = "Deleting…";
+      msg.className = "msg";
+
+      fetch(API_BASE + "/api/v1/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: { email: email.value.trim(), password: pass.value }
+        })
+      })
+      .then(function (res) {
+        if (res.status === 204) {
+          form.style.display = "none";
+          showMsg("ok", "Your account and data have been permanently deleted. " +
+                        "You can now uninstall the app.");
+          return;
+        }
+        if (res.status === 401) {
+          throw new Error("That email and password didn’t match an account. " +
+                          "Please check and try again.");
+        }
+        throw new Error("Something went wrong (error " + res.status + "). " +
+                        "Please try again, or email thooper41@gmail.com.");
+      })
+      .catch(function (err) {
+        var offline = /Failed to fetch|NetworkError/i.test(err.message);
+        showMsg("err", offline
+          ? "Couldn’t reach the server. Check your connection and try again."
+          : err.message);
+        submit.disabled = false;
+        submit.textContent = "Permanently delete my account";
+      });
+    });
+  </script>
+</body>
+</html>
