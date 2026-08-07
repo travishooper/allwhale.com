@@ -64,14 +64,15 @@
       favorites, votes, and “not kid friendly” flags. This cannot be undone.
     </div>
 
-    <p>To confirm it’s you, enter the email and password for your KidFriendly account.</p>
+    <p id="lead">To delete your account, sign in with the Google account you use
+    for KidFriendly.</p>
 
-    <form id="form" novalidate>
-      <label for="email">Email</label>
-      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+    <!-- Step 1: prove identity with Google -->
+    <div id="signin"><div id="gbtn"></div></div>
 
-      <label for="password">Password</label>
-      <input id="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+    <!-- Step 2: confirm + delete (revealed after sign-in) -->
+    <form id="form" novalidate style="display:none">
+      <p>Signed in as <strong id="who"></strong>.</p>
 
       <label class="check">
         <input id="confirm" type="checkbox">
@@ -91,31 +92,58 @@
 
   <script>
     // KidFriendly API base URL. Update if the server host changes.
-    var API_BASE = "https://78.47.203.211.sslip.io";
+    var API_BASE  = "https://78.47.203.211.sslip.io";
+    // Web OAuth client ID — MUST match the server's GOOGLE_OAUTH_CLIENT_ID.
+    var CLIENT_ID = "433357405800-sm4kkjv96liru60nvonnhu6496to2ibl.apps.googleusercontent.com";
 
+    var lead    = document.getElementById("lead");
+    var signin  = document.getElementById("signin");
     var form    = document.getElementById("form");
-    var email   = document.getElementById("email");
-    var pass    = document.getElementById("password");
+    var who     = document.getElementById("who");
     var confirm = document.getElementById("confirm");
     var submit  = document.getElementById("submit");
     var msg     = document.getElementById("msg");
 
-    confirm.addEventListener("change", function () {
-      submit.disabled = !confirm.checked;
-    });
+    var idToken = null;
 
     function showMsg(kind, text) {
       msg.className = "msg show " + kind;
       msg.textContent = text;
     }
 
+    // Pull the email out of the Google ID token, for display only.
+    function emailFromToken(jwt) {
+      try {
+        var part = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(atob(part)).email || "your Google account";
+      } catch (e) { return "your Google account"; }
+    }
+
+    // Google returns a signed ID token here after the user picks an account.
+    function onCredential(resp) {
+      idToken = resp.credential;
+      who.textContent = emailFromToken(idToken);
+      lead.style.display = "none";
+      signin.style.display = "none";
+      form.style.display = "";
+    }
+
+    // Called by the GIS library's onload (see script tag below).
+    function initGsi() {
+      google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onCredential });
+      google.accounts.id.renderButton(
+        document.getElementById("gbtn"),
+        { theme: "outline", size: "large", text: "signin_with", shape: "pill" }
+      );
+    }
+
+    confirm.addEventListener("change", function () {
+      submit.disabled = !confirm.checked;
+    });
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      if (!confirm.checked) return;
-      if (!email.value.trim() || !pass.value) {
-        showMsg("err", "Please enter your email and password.");
-        return;
-      }
+      if (!confirm.checked || !idToken) return;
 
       submit.disabled = true;
       submit.textContent = "Deleting…";
@@ -124,9 +152,7 @@
       fetch(API_BASE + "/api/v1/account", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user: { email: email.value.trim(), password: pass.value }
-        })
+        body: JSON.stringify({ id_token: idToken })
       })
       .then(function (res) {
         if (res.status === 204) {
@@ -136,8 +162,10 @@
           return;
         }
         if (res.status === 401) {
-          throw new Error("That email and password didn’t match an account. " +
-                          "Please check and try again.");
+          throw new Error("Couldn’t verify your Google sign-in. Please try again.");
+        }
+        if (res.status === 404) {
+          throw new Error("No KidFriendly account was found for that Google login.");
         }
         throw new Error("Something went wrong (error " + res.status + "). " +
                         "Please try again, or email thooper41@gmail.com.");
@@ -152,5 +180,8 @@
       });
     });
   </script>
+
+  <!-- Google Identity Services. onload guarantees `google` exists before initGsi. -->
+  <script src="https://accounts.google.com/gsi/client" async onload="initGsi()"></script>
 </body>
 </html>
